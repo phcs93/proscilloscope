@@ -308,3 +308,23 @@
     };
   
   })(this);
+
+  function fbm (x, y, z, octaves) {
+
+    let factor = 0.0;
+    let signal = 0.0;
+    let scale = 0.5;
+
+    for (let i = 0; i < octaves; i++){
+        let value = noise.perlin3(x, y, z);
+        signal += value * scale;
+        factor += scale;
+        x *= 2.0;
+        y *= 2.0;
+        z *= 2.0;
+        scale *= 0.5;
+    }
+
+    return signal / factor;
+
+}
