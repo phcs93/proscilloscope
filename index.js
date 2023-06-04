@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelector("button").onclick = async e => {
 
         const note = Object.keys(notes)[parseInt((Object.keys(notes).length * Math.random()))];
-        const octave = parseInt(Math.random() * 6);
+        const octave = parseInt(Math.random() * 4);
         const type = parseInt(Math.random() * 4);
         let wave = null;
 
@@ -30,11 +30,32 @@ document.addEventListener("DOMContentLoaded", async () => {
             // default: // custom (oscillator.setPeriodicWave())
         }
 
-        play(/*notes[note][octave]*/ Math.random() * 1000, wave);
+        play(/*notes[note][octave]*/ Math.random() * 150, wave);
 
     }
 
 });
+
+
+
+// …
+
+function makeDistortionCurve(amount) {
+  const k = typeof amount === "number" ? amount : 50;
+  const n_samples = 44100;
+  const curve = new Float32Array(n_samples);
+  const deg = Math.PI / 180;
+
+  for (let i = 0; i < n_samples; i++) {
+    const x = (i * 2) / n_samples - 1;
+    curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+  }
+  return curve;
+}
+
+// …
+
+
 
 function play (frequency, wave) {
 
@@ -45,11 +66,20 @@ function play (frequency, wave) {
         frequency: 0
     });
 
+    const distortion = audioContext.createWaveShaper();
+    distortion.curve = makeDistortionCurve(400);
+
     //==    
-    const waveSize = parseInt(getRandomNumber(2, 20));
+    const waveSize = parseInt(getRandomNumber(2, 10));
     oscillator.setPeriodicWave(new PeriodicWave(audioContext, {
+        // add more features to the randomness like:
+        // repetition, zero repetition, min/max repetition, smoothstep, roughstep
+        // maybe using a combination of noise modules would do the trick (billow, multiridged fractal, etc)
         real: getRandomArray(waveSize, -1, 1), 
-        imag: getRandomArray(waveSize, -1, 1)
+        imag: getRandomArray(waveSize, -1, 1),
+        //real: [.5,0.370,.5,.5],
+        //imag: [.5,0.370,.5,.5],
+        disableNormalization: false
     }));
     //==
 
@@ -72,9 +102,9 @@ function play (frequency, wave) {
 
     oscillator.frequency.value = frequency;
 
-    //const duration = 1.00; // seconds
-    const fadeIn = 1.00; // seconds
-    //const fadeOut = 0.05; // seconds
+    const duration = 0.10; // seconds
+    const fadeIn = 0.10; // seconds
+    const fadeOut = 0.10; // seconds
 
     gain.gain.linearRampToValueAtTime(1, audioContext.currentTime + fadeIn);
     //gain.gain.setValueAtTime(1, audioContext.currentTime + fadeIn);    
@@ -84,9 +114,11 @@ function play (frequency, wave) {
 }
 
 function getRandomArray (size, minValue, maxValue) {
+    //noise.seed(Math.random());
     let array = new Array(size);
     for (let i = 0; i < array.length; i++) {
-        array[i] = getRandomNumber(minValue, maxValue);
+        //array[i] = getRandomNumber(minValue, maxValue);
+        array[i] = noise.perlin2(i/array.length, 0);
     }
     console.log(array);
     return array;
