@@ -1,5 +1,3 @@
-let kill = false;
-
 document.addEventListener("DOMContentLoaded", async () => {
 
     const notes = {
@@ -19,41 +17,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.querySelector("button").onclick = async e => {
 
-        kill = false;
+        const note = Object.keys(notes)[parseInt((Object.keys(notes).length * Math.random()))];
+        const octave = parseInt(Math.random() * 6);
+        const type = parseInt(Math.random() * 4);
+        let wave = null;
 
-        //const note = Object.keys(notes)[parseInt((Object.keys(notes).length * Math.random()))];
-        
-        const E5 = notes.E[5];
-        const C5 = notes.C[5];
-        const G5 = notes.G[5];
-        const G4 = notes.G[4];
-
-        const bar = [
-            [E5,200],[E5,400],[E5,400],
-            [C5,250],[E5,350],[G5,800],
-            [G4,200],
-        ];
-
-        for (const note of bar) {
-            play(note[0], note[1]/1000);
-            await sleep(note[1]);
+        switch (type) {
+            case 0: wave = "sine"; break;
+            case 1: wave = "square"; break;
+            case 2: wave = "sawtooth"; break;
+            case 3: wave = "triangle"; break;
+            // default: // custom (oscillator.setPeriodicWave())
         }
 
-        kill = true;
-
+        play(/*notes[note][octave]*/ Math.random() * 1000, wave);
 
     }
 
 });
 
-function play (frequency, duration) {
+function play (frequency, wave) {
 
     const audioContext = new AudioContext();
 
     const oscillator = new OscillatorNode(audioContext, {
-        type: "square",
+        //type: "sine",
         frequency: 0
     });
+
+    //==    
+    const waveSize = parseInt(getRandomNumber(2, 20));
+    oscillator.setPeriodicWave(new PeriodicWave(audioContext, {
+        real: getRandomArray(waveSize, -1, 1), 
+        imag: getRandomArray(waveSize, -1, 1)
+    }));
+    //==
 
     const gain = new GainNode(audioContext, {
         gain: 0
@@ -68,69 +66,91 @@ function play (frequency, duration) {
     analyser.getByteTimeDomainData(dataArray);
 
     oscillator.connect(gain).connect(analyser).connect(audioContext.destination);
-    // oscillator.setPeriodicWave()
+    oscillator.start(0);
 
-    const canvas = document.querySelector("canvas");
+    createCanvas(analyser, dataArray, bufferLength);    
+
+    oscillator.frequency.value = frequency;
+
+    //const duration = 1.00; // seconds
+    const fadeIn = 1.00; // seconds
+    //const fadeOut = 0.05; // seconds
+
+    gain.gain.linearRampToValueAtTime(1, audioContext.currentTime + fadeIn);
+    //gain.gain.setValueAtTime(1, audioContext.currentTime + fadeIn);    
+    //gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + fadeIn + duration + fadeOut);
+    //gain.gain.setValueAtTime(0, + fadeIn + duration + fadeOut);
+
+}
+
+function getRandomArray (size, minValue, maxValue) {
+    let array = new Array(size);
+    for (let i = 0; i < array.length; i++) {
+        array[i] = getRandomNumber(minValue, maxValue);
+    }
+    console.log(array);
+    return array;
+}
+
+function getRandomNumber(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function createCanvas (analyser, dataArray, bufferLength) {
+
+    const id = document.querySelectorAll("canvas").length + 1;
+    const html = `<canvas id="oscilloscope-${id}" width="100%" height="64px"></canvas>`;
+    document.body.insertAdjacentHTML("beforeend", html);    
+    const canvas = document.getElementById(`oscilloscope-${id}`);
+    
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    const canvasContext = canvas.getContext("2d", { willReadFrequently: true });
 
-    function draw() {
+    const context = canvas.getContext("2d", { willReadFrequently: true });
 
-        if (!kill) {
-            requestAnimationFrame(draw);
-        }
+    const draw = () => {
+
+        requestAnimationFrame(draw);
 
         analyser.getByteTimeDomainData(dataArray);
 
-        canvasContext.fillStyle = "rgb(200, 200, 200)";
-        canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = "rgb(0, 0, 0)";
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
-        canvasContext.lineWidth = 2;
-        canvasContext.strokeStyle = "rgb(0, 0, 0)";
+        context.lineWidth = 2;
+        context.strokeStyle = "rgb(255, 255, 255)";
 
-        canvasContext.beginPath();
+        context.beginPath();
 
         const sliceWidth = (canvas.width * 1.0) / bufferLength;
+
         let x = 0;
 
         for (let i = 0; i < bufferLength; i++) {
+
             const v = dataArray[i] / 128.0;
             const y = (v * canvas.height) / 2;
 
             if (i === 0) {
-                canvasContext.moveTo(x, y);
+                context.moveTo(x, y);
             } else {
-                canvasContext.lineTo(x, y);
+                context.lineTo(x, y);
             }
 
             x += sliceWidth;
+
         }
 
-        canvasContext.lineTo(canvas.width, canvas.height / 2);
-        canvasContext.stroke();
+        context.lineTo(canvas.width, canvas.height / 2);
+        context.stroke();
+
     }
 
     draw();
-
-    oscillator.start(0);
-
-    oscillator.frequency.value = frequency;
-
-    //const duration = 0.10; // seconds
-    const fadeIn = 0.05; // seconds
-    const fadeOut = 0.05; // seconds
-
-    gain.gain.linearRampToValueAtTime(1, audioContext.currentTime + fadeIn);
-
-    //gain.gain.setValueAtTime(1, audioContext.currentTime);
-    const stopTime = audioContext.currentTime + duration;
-    //gain.gain.setValueAtTime(1, stopTime - fadeOffset);
-    gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + fadeIn + duration + fadeOut);
-    gain.gain.setValueAtTime(0, + fadeIn + duration + fadeOut);
 
 }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
