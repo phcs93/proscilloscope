@@ -1,24 +1,163 @@
+* {
+    color: lightgray;
+    font-family: "Segoe UI";
+    font-size: 16px;
+    /* border: 1px solid red; */
+}
+
+html, body {    
+    width: 100%;
+    height: 100%;
+}
+
 body {
-    background-color: #181818;
+    background-color: black;
+    margin: 0px;
+    padding: 0px;
+}
+
+div.flex-columns {    
+    display: flex;
+    flex-direction: row;
+}
+
+div.flex-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.margin {
+    margin: 16px;
+}
+
+.padding {
+    padding: 16px;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+.gap {
+    gap: 16px;
+}
+
+.width100 {
+    width: 100%;
+}
+
+.width50 {
+    width: 50%;
+}
+
+.align-right {
+    text-align: right;
+}
+
+label {
+    font-family: "Candara";
+    font-size: 14px;
+    font-weight: bold;
+    height: 32px;
+    line-height: 32px;
+}
+
+input {
+    font-family: "Segoe UI";
+    font-size: 14px;
+    font-weight: bold;
+    height: 32px;
+    line-height: 32px;
+    background-color: #0E0E0E;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 0px 8px;
+}
+
+select {
+    font-family: "Segoe UI";
+    font-size: 14px;
+    font-weight: bold;
+    height: 32px;
+    line-height: 32px;
+    background-color: #0E0E0E;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 0px 8px;
 }
 
 button {
-    width: 100%;
-    height: 64px;
-    background-color: #1E1E1E;
-    color: lightgray;
-    border: #3E3E3E;
+    font-family: "Candara";
+    font-weight: bold;
+    font-size: 14px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0px 8px;
+    background-color: #0E0E0E;
+    border: 1px solid black;
+    border-radius: 5px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #2E2E2E;
+    background-color: #1E1E1E;
 }
 
 canvas {
     width: 100%;
-    height: 64px;
+    height: 128px;
     border: 1px solid white;
-    margin-top: 8px;
-    margin-bottom: 8px;
+}
+
+div#oscilloscopes {
+    /* margin: 16px; */
+    /* padding: 0px;     */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(512px, 1fr));
+    grid-gap: 16px;
+}
+
+/* @media only screen and (min-width: 768px) {
+    div#oscilloscopes {
+        padding: 0px 16px;
+    }
+} */
+
+div.oscilloscope {
+    background-color: #181818;
+    border-radius: 10px;
+}
+
+label.frequency-label::after {
+    content: ' Hz';
+}
+
+div.warning {
+    text-align: center;
+    background-color: #181818;
+    border-radius: 10px;
+    font-weight: bold;
+    color: goldenrod;
+}
+
+button#add-oscilloscope {
+    height: 128px;
+}
+
+button#add-oscilloscope::before {
+    content: '＋';
+    font-size: 32px;
+    display: block;
+    border: 1px dashed gray;
+    border-radius: 90px;
+    width: 32px;
+    height: 32px;
+    color: gray;
+    font-weight: normal;
+    left: calc(50% - 16px);
+    position: relative;
+}
+
+.red {
+    background-color: firebrick;
 }
