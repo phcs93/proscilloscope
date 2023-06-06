@@ -38,6 +38,10 @@ div.flex-rows {
     flex-grow: 1;
 }
 
+.stretch {
+    align-items: stretch;
+}
+
 .gap {
     gap: 16px;
 }
